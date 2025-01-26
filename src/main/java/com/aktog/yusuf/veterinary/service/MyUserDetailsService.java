@@ -25,19 +25,17 @@ public class MyUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Optional<PetOwner> optionalPetOwner = petOwnerService.findByEmail(email);
 
-        if (optionalPetOwner.isEmpty()) {
-            throw new EntityNotFoundException("Entity with email: " + email + " could not found!");
-        }
+        return petOwnerService.findByEmail(email)
+                .map(petOwner -> {
+                    List<GrantedAuthority> grantedAuthorities = petOwner.getAuthorities()
+                            .stream()
+                            .map(authority -> new SimpleGrantedAuthority(authority.getName()))
+                            .collect(Collectors.toList());
 
-        PetOwner petOwner = optionalPetOwner.get();
+                    return new User(petOwner.getEmail(), petOwner.getPassword(), grantedAuthorities);
+                })
+                .orElseThrow(() -> new EntityNotFoundException("Entity with email: " + email + " could not found!"));
 
-        List<GrantedAuthority> grantedAuthorities = petOwner.getAuthorities()
-                .stream()
-                .map(authority -> new SimpleGrantedAuthority(authority.getName()))
-                .collect(Collectors.toList());
-
-        return new User(petOwner.getEmail(), petOwner.getPassword(), grantedAuthorities);
     }
 }
