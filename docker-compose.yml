@@ -1,0 +1,27 @@
+version: '1'
+
+services:
+  veterinary:
+    container_name: veterinary
+    image: yusufaktog/veterinaryapp:v1.0
+    build: .
+    depends_on:
+      - db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/veterinary
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=admin
+    ports:
+      - "8082:8080"
+      - "8083:8080"
+  db:
+    container_name: db
+    image: postgres
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=veterinary
+    restart: always
+
+    expose:
+      - "5432:5432"
